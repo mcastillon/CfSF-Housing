@@ -1,5 +1,5 @@
 options(stringsAsFactors = F)
-setwd("~/Github/Code for San Francisco/Housing")
+setwd("~/Github/CfSf Housing")
 
 library(shiny)
 library(data.table)
@@ -24,17 +24,18 @@ shinyServer(function(input, output, session) {
   ### create time series object
   sf_zoo <- zoo(t(select(sf, starts_with("2")))) %>%
     na.approx(rule = 2)
-  index(sf_zoo) <- as.Date(colnames(select(sf, starts_with("2"))))
+  ### unfortunately most neighborhoods only have reliable data from 2011 onwards
+  index(sf_zoo) <- colnames(select(sf, starts_with("2")))
   colnames(sf_zoo) <- sf$region
-  ### quarterly numbers are more reliable than monthly due to sample size
-  sf_zoo_qtr <- aggregate(sf_zoo, as.yearqtr, mean)
+  ### aggregating by yearmon allows for the years to be labeled
+  sf_zoo_mon <- aggregate(sf_zoo, as.yearmon, mean)
 
   #### feed ui with neighborhood names
-  updateSelectInput(session, "neighborhood", choices = names(sf_zoo))
+  updateSelectInput(session, "neighborhood", choices = names(sf_zoo_mon))
   
-  #### generate ARIMA forecast for the next year and a half 
+  #### generate ARIMA (Autoregressive Integrated Moving Average) forecast for the next year
   output$rent_plot <- renderPlot({
-    rent_arima <- auto.arima(sf_zoo[, input$neighborhood])
+    rent_arima <- auto.arima(sf_zoo_mon[, input$neighborhood])
     forecast_arima <- forecast(rent_arima, h = 12)
     plot(forecast_arima, xlab = "Year", ylab = "Median Rent",
          main = paste("ARIMA Forecast of Median Zillow Rent for",
