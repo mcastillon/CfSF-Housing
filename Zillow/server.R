@@ -1,5 +1,4 @@
 options(stringsAsFactors = F)
-setwd("~/Github/Code for San Francisco/Housing")
 
 library(shiny)
 library(data.table)
@@ -10,7 +9,7 @@ library(forecast)
 
 shinyServer(function(input, output, session) {
   ### Zillow Median Rent dataset
-  zillow <- fread("Data/zillow_rentmedian.csv")
+  zillow <- fread("~/CfSF Housing/Data/zillow_rentmedian.csv")
   
   setnames(zillow, tolower(colnames(zillow)))
   
@@ -24,7 +23,7 @@ shinyServer(function(input, output, session) {
   ### create time series object
   sf_zoo <- zoo(t(select(sf, starts_with("2")))) %>%
     na.approx(rule = 2)
-  index(sf_zoo) <- as.Date(colnames(select(sf, starts_with("2"))))
+  index(sf_zoo) <- as.yearmon(colnames(select(sf, starts_with("2"))))
   colnames(sf_zoo) <- sf$region
   ### quarterly numbers are more reliable than monthly due to sample size
   sf_zoo_qtr <- aggregate(sf_zoo, as.yearqtr, mean)
