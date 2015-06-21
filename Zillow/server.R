@@ -7,9 +7,10 @@ library(dplyr)
 library(zoo)
 library(forecast)
 
+### Zillow Median Rent dataset
+zillow <- fread("C:/Users/mcast_000/Documents/GitHub/CfSF Housing/Data/zillow_rentmedian.csv")
+
 shinyServer(function(input, output, session) {
-  ### Zillow Median Rent dataset
-  zillow <- fread("~/CfSF Housing/Data/zillow_rentmedian.csv")
   
   setnames(zillow, tolower(colnames(zillow)))
   
